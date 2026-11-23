@@ -35,8 +35,8 @@ IAM identities and groups
           |
           v
       Amazon S3
-  - Secure-storage bucket (not yet identified in evidence)
-  - CloudTrail log-delivery bucket
+  - Project storage bucket (candidate identified)
+  - Separate CloudTrail log-delivery bucket
   - HTTPS-only transport policy example
           |
           v
@@ -76,24 +76,35 @@ The Auditor group policy is documented in [iam/auditor-policy.json](iam/auditor-
 
 See [IAM documentation](iam/README.md) for policy interpretation and limitations. These policy documents do not by themselves establish all effective permissions for the users.
 
+### S3 bucket inventory
+
+The supplied S3 bucket-list screenshot shows two general-purpose buckets:
+
+| Bucket purpose | Console evidence | Region |
+|---|---|---|
+| Project storage candidate | `hemanth-1234` | Europe (Stockholm), `eu-north-1` |
+| CloudTrail log delivery | AWS-generated CloudTrail log bucket (name redacted) | Asia Pacific (Hyderabad), `ap-south-2` |
+
+The project-storage candidate matches the bucket name in the supplied HTTPS-only policy. Its individual Block Public Access, versioning and default-encryption settings still need to be inspected directly. The screenshot of the CloudTrail bucket must not be used as evidence for the project-storage bucket.
+
 ### S3 transport security
 
-A bucket policy was supplied that denies all S3 actions when `aws:SecureTransport` is `false`. A sanitized copy is in [s3/https-only-bucket-policy.json](s3/https-only-bucket-policy.json).
+A bucket policy was supplied for `hemanth-1234` that denies all S3 actions when `aws:SecureTransport` is `false`. A sanitized copy is in [s3/https-only-bucket-policy.json](s3/https-only-bucket-policy.json).
 
 This policy enforces secure transport. It does not, by itself, configure S3 Block Public Access, encryption, versioning or least-privilege access.
 
 ### CloudTrail logging bucket
 
-The supplied S3 console screenshots show the bucket used as the CloudTrail log destination (bucket name redacted in this documentation) in the Asia Pacific (Hyderabad) region, `ap-south-2`.
+The supplied S3 console screenshots show the CloudTrail log-delivery bucket in the Asia Pacific (Hyderabad) region, `ap-south-2`.
 
 - Block all public access: **On**.
 - Bucket versioning: **Disabled**.
 - MFA Delete: **Disabled**.
 - Bucket ABAC: **Disabled**.
 - Default encryption: **Not visible in the supplied screenshots; not yet verified**.
-- The bucket policy editor is not shown with its JSON contents in the screenshot; the CloudTrail log-delivery policy supplied separately is documented in [cloudtrail/log-delivery-bucket-policy.json](cloudtrail/log-delivery-bucket-policy.json).
+- The CloudTrail log-delivery policy supplied separately is documented in [cloudtrail/log-delivery-bucket-policy.json](cloudtrail/log-delivery-bucket-policy.json).
 
-These settings apply to the CloudTrail log-delivery bucket shown in the screenshots. They do not establish the configuration of a separate application/secure-storage bucket. The project storage bucket has not yet been identified in the evidence.
+These settings apply only to the CloudTrail log-delivery bucket.
 
 ### CloudTrail
 
@@ -106,8 +117,6 @@ The reviewed trail was named `management-events` and showed:
 - SNS notification delivery: disabled.
 - Log file validation: disabled.
 - CloudWatch Logs destination/log group: present.
-
-The trail's S3 log-delivery bucket policy was supplied and sanitized in [cloudtrail/log-delivery-bucket-policy.json](cloudtrail/log-delivery-bucket-policy.json).
 
 **Operational note:** recheck trail logging status and event selectors before describing CloudTrail as actively collecting current events.
 
@@ -126,14 +135,16 @@ The reviewed CloudTrail trail details showed SNS notification delivery disabled.
 | IAM groups | Three groups visible | Evidenced |
 | Developer group policy | Supplied JSON identified by user | Documented |
 | Auditor group policy | Supplied JSON identified by user | Documented |
-| HTTPS-only bucket policy | JSON supplied | Evidenced |
-| CloudTrail log-delivery bucket policy | JSON supplied | Evidenced |
-| CloudTrail multi-region setting | Enabled in screenshot | Evidenced |
-| CloudTrail logging | Off in screenshot | Inactive in captured state |
+| Project storage bucket identity | `hemanth-1234`, `eu-north-1` shown in bucket list | Identified; settings pending |
+| Project bucket Block Public Access | Not yet inspected for this bucket | Not yet verified |
+| Project bucket versioning | Not yet inspected for this bucket | Not yet verified |
+| Project bucket default encryption | Not yet inspected for this bucket | Not yet verified |
+| Project bucket policy | HTTPS-only JSON supplied; attachment to bucket should be confirmed | Policy supplied |
 | CloudTrail log bucket Block Public Access | On | Evidenced |
 | CloudTrail log bucket versioning | Disabled | Evidenced |
 | CloudTrail log bucket default encryption | Not visible | Not yet verified |
-| Secure-storage bucket identity/settings | Not yet identified | Not yet verified |
+| CloudTrail multi-region setting | Enabled in screenshot | Evidenced |
+| CloudTrail logging | Off in screenshot | Inactive in captured state |
 | CloudWatch log group | Present, three filters | Evidenced |
 | Metric filter patterns | Not supplied | Not yet verified |
 | CloudWatch alarms | Not supplied | Not yet verified |
@@ -174,7 +185,7 @@ The reviewed CloudTrail trail details showed SNS notification delivery disabled.
 
 ## Next evidence to add
 
-1. Identify the separate secure-storage bucket, if one exists, and capture its Block Public Access, versioning, encryption and bucket policy.
+1. Inspect `hemanth-1234` and capture its Block Public Access, versioning, encryption and bucket policy.
 2. Capture default encryption for the CloudTrail log bucket.
 3. CloudTrail management/data event selectors and current logging status.
 4. The three CloudWatch metric-filter names and patterns, plus alarm configurations.
