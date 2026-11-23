@@ -2,7 +2,7 @@
 
 A hands-on AWS cloud-security project exploring secure object storage, identity-based access control, audit logging and monitoring.
 
-> **Evidence-based status:** This repository documents the configurations and policy documents reviewed so far. Some services were configured but are not currently shown as active. Items marked **Not yet verified** must not be presented as completed implementation.
+> **Evidence-based status:** This repository documents configurations and policy documents reviewed so far. Some services were configured but are not currently shown as active. Items marked **Not yet verified** must not be presented as completed implementation.
 
 ## Project objectives
 
@@ -35,15 +35,15 @@ IAM identities and groups
           |
           v
       Amazon S3
-  - Bucket access policy
-  - HTTPS-only transport control
-  - Public-access and object settings (verification pending)
+  - Secure-storage bucket (not yet identified in evidence)
+  - CloudTrail log-delivery bucket
+  - HTTPS-only transport policy example
           |
           v
       AWS CloudTrail
   - Multi-region trail configured
   - S3 log destination configured
-  - Logging status must be checked before relying on new events
+  - Logging status was Off in captured screenshot
           |
           v
     CloudWatch Logs
@@ -70,9 +70,9 @@ The AWS account contains three IAM user groups:
 | `auditors` | 1 |
 | `unauthorizeduser` | 0 |
 
-The Developer group policy supplied and identified by the user is documented in [iam/developer-policy.json](iam/developer-policy.json). It grants S3 Files `Get*`/`List*` operations and selected EC2 `Describe*` operations. It does **not** show standard S3 object upload permission such as `s3:PutObject`.
+The Developer group policy is documented in [iam/developer-policy.json](iam/developer-policy.json). It grants S3 Files `Get*`/`List*` operations and selected EC2 `Describe*` operations. It does **not** show standard S3 object upload permission such as `s3:PutObject`.
 
-The Auditor group policy supplied and identified by the user is documented in [iam/auditor-policy.json](iam/auditor-policy.json). It grants S3 and S3 Object Lambda read/list/describe actions, with `Resource: "*"`.
+The Auditor group policy is documented in [iam/auditor-policy.json](iam/auditor-policy.json). It grants S3 and S3 Object Lambda read/list/describe actions, with `Resource: "*"`.
 
 See [IAM documentation](iam/README.md) for policy interpretation and limitations. These policy documents do not by themselves establish all effective permissions for the users.
 
@@ -81,6 +81,19 @@ See [IAM documentation](iam/README.md) for policy interpretation and limitations
 A bucket policy was supplied that denies all S3 actions when `aws:SecureTransport` is `false`. A sanitized copy is in [s3/https-only-bucket-policy.json](s3/https-only-bucket-policy.json).
 
 This policy enforces secure transport. It does not, by itself, configure S3 Block Public Access, encryption, versioning or least-privilege access.
+
+### CloudTrail logging bucket
+
+The supplied S3 console screenshots show the bucket used as the CloudTrail log destination (bucket name redacted in this documentation) in the Asia Pacific (Hyderabad) region, `ap-south-2`.
+
+- Block all public access: **On**.
+- Bucket versioning: **Disabled**.
+- MFA Delete: **Disabled**.
+- Bucket ABAC: **Disabled**.
+- Default encryption: **Not visible in the supplied screenshots; not yet verified**.
+- The bucket policy editor is not shown with its JSON contents in the screenshot; the CloudTrail log-delivery policy supplied separately is documented in [cloudtrail/log-delivery-bucket-policy.json](cloudtrail/log-delivery-bucket-policy.json).
+
+These settings apply to the CloudTrail log-delivery bucket shown in the screenshots. They do not establish the configuration of a separate application/secure-storage bucket. The project storage bucket has not yet been identified in the evidence.
 
 ### CloudTrail
 
@@ -117,13 +130,14 @@ The reviewed CloudTrail trail details showed SNS notification delivery disabled.
 | CloudTrail log-delivery bucket policy | JSON supplied | Evidenced |
 | CloudTrail multi-region setting | Enabled in screenshot | Evidenced |
 | CloudTrail logging | Off in screenshot | Inactive in captured state |
+| CloudTrail log bucket Block Public Access | On | Evidenced |
+| CloudTrail log bucket versioning | Disabled | Evidenced |
+| CloudTrail log bucket default encryption | Not visible | Not yet verified |
+| Secure-storage bucket identity/settings | Not yet identified | Not yet verified |
 | CloudWatch log group | Present, three filters | Evidenced |
 | Metric filter patterns | Not supplied | Not yet verified |
 | CloudWatch alarms | Not supplied | Not yet verified |
 | SNS delivery/notifications | Trail delivery disabled | Not yet verified |
-| S3 Block Public Access | No screenshot supplied | Not yet verified |
-| S3 versioning | No screenshot supplied | Not yet verified |
-| S3 default encryption | No screenshot supplied | Not yet verified |
 | IAM Policy Simulator tests | No results supplied | Not yet verified |
 | End-to-end security tests | No test evidence supplied | Not yet verified |
 
@@ -160,11 +174,12 @@ The reviewed CloudTrail trail details showed SNS notification delivery disabled.
 
 ## Next evidence to add
 
-1. S3 Block Public Access, versioning and default-encryption screenshots.
-2. CloudTrail management/data event selectors and current logging status.
-3. The three CloudWatch metric-filter names and patterns, plus alarm configurations.
-4. SNS topic/subscription evidence and a successful test notification, if performed.
-5. IAM Policy Simulator allow/deny results and actual security-test evidence.
+1. Identify the separate secure-storage bucket, if one exists, and capture its Block Public Access, versioning, encryption and bucket policy.
+2. Capture default encryption for the CloudTrail log bucket.
+3. CloudTrail management/data event selectors and current logging status.
+4. The three CloudWatch metric-filter names and patterns, plus alarm configurations.
+5. SNS topic/subscription evidence and a successful test notification, if performed.
+6. IAM Policy Simulator allow/deny results and actual security-test evidence.
 
 ## Scope and limitations
 
