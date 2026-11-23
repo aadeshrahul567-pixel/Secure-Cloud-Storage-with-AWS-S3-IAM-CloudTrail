@@ -152,6 +152,21 @@ The reviewed CloudTrail trail details showed SNS notification delivery disabled.
 | IAM Policy Simulator tests | No results supplied | Not yet verified |
 | End-to-end security tests | No test evidence supplied | Not yet verified |
 
+## Project documentation
+
+The complete five-step workflow from the supplied project pages is documented here:
+
+- [Project workflow: setup, S3 hardening, IAM, monitoring, testing and reporting](docs/project-workflow.md)
+- [Architecture and observed-state caveats](docs/architecture.md)
+- [Security test matrix and evidence to capture](docs/security-test-matrix.md)
+- [IAM policy findings](iam/README.md)
+- [S3 bucket configuration notes](s3/README.md)
+- [CloudTrail configuration notes](cloudtrail/README.md)
+
+The project plan's target IAM matrix is Developers (bucket list/read/write), Auditors (bucket list/read, no write), and Unauthorized User (no list/read/write). This is an intended test matrix, not a claim that the current attached policies already implement it. The actual supplied Developer and Auditor JSON files are preserved unchanged.
+
+The plan's monitoring examples include `DeleteBucket`, `PutBucketAcl`, and `ConsoleLogin` without MFA. These are planned detections; the actual CloudWatch metric-filter patterns and working alert results have not yet been verified.
+
 ## Repository structure
 
 ```text
