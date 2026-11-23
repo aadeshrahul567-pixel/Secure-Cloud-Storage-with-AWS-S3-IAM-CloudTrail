@@ -2,11 +2,25 @@
 
 The reviewed console screenshot showed a multi-region trail named `management-events`, with an S3 log destination. Trail logging was **Off** in that screenshot, and CloudTrail SNS notification delivery was disabled. The last log-file delivery shown was 19 August 2026.
 
+## CloudTrail log-delivery bucket
+
+The S3 console screenshots identify the bucket shown as the CloudTrail log destination in the Asia Pacific (Hyderabad) region (`ap-south-2`). The captured settings were:
+
+| Setting | Captured value |
+|---|---|
+| Block all public access | On |
+| Bucket versioning | Disabled |
+| MFA Delete | Disabled |
+| Bucket ABAC | Disabled |
+| Default encryption | Not visible in supplied screenshots |
+
+These settings are specific to the CloudTrail log-delivery bucket. Do not assume they describe a separate application/secure-storage bucket.
+
 A CloudTrail S3 log-delivery bucket policy was supplied; a sanitized copy is in [log-delivery-bucket-policy.json](log-delivery-bucket-policy.json).
 
 ## Important distinction
 
-A configured trail is not necessarily collecting events now. Recheck the trail's logging status and event selectors before relying on it.
+A configured trail is not necessarily collecting events now. Recheck the trail's logging status and event selectors before relying on it. The screenshot captured logging as Off.
 
 ## Evidence still required
 
@@ -15,3 +29,4 @@ A configured trail is not necessarily collecting events now. Recheck the trail's
 - S3 data event selectors for object-level activity, if configured.
 - CloudWatch Logs integration.
 - Event History examples showing the events actually recorded.
+- Default encryption settings for the log-delivery bucket.
