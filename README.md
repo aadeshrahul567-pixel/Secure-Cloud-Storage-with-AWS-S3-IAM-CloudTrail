@@ -2,7 +2,7 @@
 
 A hands-on AWS cloud-security project exploring secure object storage, identity-based access control, audit logging and monitoring.
 
-> **Evidence-based project status:** This repository documents configurations and evidence observed during the project review. Some services were configured but are not currently shown as active. Items marked **Not yet verified** must not be presented as completed implementation.
+> **Evidence-based status:** This repository documents the configurations and policy documents reviewed so far. Some services were configured but are not currently shown as active. Items marked **Not yet verified** must not be presented as completed implementation.
 
 ## Project objectives
 
@@ -64,13 +64,17 @@ This is a logical view of the components, not proof that every connection is cur
 
 The AWS account contains three IAM user groups:
 
-| Group | Users shown in screenshot | Observation |
-|---|---:|---|
-| `developer` | 2 | Group exists |
-| `auditors` | 1 | Group exists |
-| `unauthorizeduser` | 0 | Group exists, no users shown |
+| Group | Users shown in screenshot |
+|---|---:|
+| `developer` | 2 |
+| `auditors` | 1 |
+| `unauthorizeduser` | 0 |
 
-The reviewed policy screenshots included AWS-managed `AmazonS3FilesClientReadWriteAccess`, `IAMUserChangePassword`, and an `sns-read` policy. These screenshots do **not** establish the existence or contents of custom Developer and Auditor S3 policies. Those policies still need to be captured from the relevant group Permissions tabs.
+The Developer group policy supplied and identified by the user is documented in [iam/developer-policy.json](iam/developer-policy.json). It grants S3 Files `Get*`/`List*` operations and selected EC2 `Describe*` operations. It does **not** show standard S3 object upload permission such as `s3:PutObject`.
+
+The Auditor group policy supplied and identified by the user is documented in [iam/auditor-policy.json](iam/auditor-policy.json). It grants S3 and S3 Object Lambda read/list/describe actions, with `Resource: "*"`.
+
+See [IAM documentation](iam/README.md) for policy interpretation and limitations. These policy documents do not by themselves establish all effective permissions for the users.
 
 ### S3 transport security
 
@@ -92,29 +96,23 @@ The reviewed trail was named `management-events` and showed:
 
 The trail's S3 log-delivery bucket policy was supplied and sanitized in [cloudtrail/log-delivery-bucket-policy.json](cloudtrail/log-delivery-bucket-policy.json).
 
-**Operational note:** enablement and event selectors must be rechecked in the AWS Console before describing CloudTrail as actively collecting current events. The supplied screenshot is a point-in-time view.
+**Operational note:** recheck trail logging status and event selectors before describing CloudTrail as actively collecting current events.
 
 ### CloudWatch Logs
 
-A CloudTrail-related log group was observed in the `ap-south-2` region with:
-
-- Three metric filters.
-- Retention: Never expire.
-- Deletion protection: Off.
-
-The screenshot does not show the metric-filter names or patterns. Alarm names, thresholds, alarm state and SNS actions have not yet been evidenced.
+A CloudTrail-related log group was observed in the `ap-south-2` region with three metric filters and retention set to Never expire. The screenshot does not show the filter names or patterns. Alarm names, thresholds, alarm state and SNS actions have not yet been evidenced.
 
 ### SNS
 
-The reviewed CloudTrail trail details showed SNS notification delivery disabled. A separate SNS policy screenshot showed the action `sns:CheckIfPhoneNumberIsOptedOut`; this action alone is not evidence of a publish/notification workflow.
+The reviewed CloudTrail trail details showed SNS notification delivery disabled. A separate SNS policy screenshot showed `sns:CheckIfPhoneNumberIsOptedOut`; this action alone is not evidence of a publish/notification workflow.
 
 ## Evidence and outstanding verification
 
 | Area | Current evidence | Status |
 |---|---|---|
 | IAM groups | Three groups visible | Evidenced |
-| Custom Developer S3 policy | Not supplied | Not yet verified |
-| Custom Auditor S3 policy | Not supplied | Not yet verified |
+| Developer group policy | Supplied JSON identified by user | Documented |
+| Auditor group policy | Supplied JSON identified by user | Documented |
 | HTTPS-only bucket policy | JSON supplied | Evidenced |
 | CloudTrail log-delivery bucket policy | JSON supplied | Evidenced |
 | CloudTrail multi-region setting | Enabled in screenshot | Evidenced |
@@ -135,7 +133,9 @@ The reviewed CloudTrail trail details showed SNS notification delivery disabled.
 .
 ├── README.md
 ├── iam/
-│   └── README.md
+│   ├── README.md
+│   ├── developer-policy.json
+│   └── auditor-policy.json
 ├── s3/
 │   ├── README.md
 │   └── https-only-bucket-policy.json
@@ -160,13 +160,12 @@ The reviewed CloudTrail trail details showed SNS notification delivery disabled.
 
 ## Next evidence to add
 
-1. Developer and Auditor group attached-policy screenshots and policy JSON.
-2. S3 Block Public Access, versioning and default-encryption screenshots.
-3. CloudTrail management/data event selectors and current logging status.
-4. The three CloudWatch metric-filter names and patterns, plus alarm configurations.
-5. SNS topic/subscription evidence and a successful test notification, if performed.
-6. IAM Policy Simulator allow/deny results and actual security-test evidence.
+1. S3 Block Public Access, versioning and default-encryption screenshots.
+2. CloudTrail management/data event selectors and current logging status.
+3. The three CloudWatch metric-filter names and patterns, plus alarm configurations.
+4. SNS topic/subscription evidence and a successful test notification, if performed.
+5. IAM Policy Simulator allow/deny results and actual security-test evidence.
 
 ## Scope and limitations
 
-This repository currently contains sanitized policy examples and documentation based on the evidence reviewed. It does not contain deployment automation, Terraform/CloudFormation templates, custom IAM Developer/Auditor policies, or verified end-to-end alert tests. Add these only when the corresponding implementation or test artifacts are available.
+This repository contains sanitized policy examples and documentation based on evidence reviewed. It does not contain deployment automation, Terraform/CloudFormation templates, or verified end-to-end alert tests. The Developer policy supplied does not show standard S3 object upload permissions; validate the intended access design before describing Developer as an S3 object uploader.
